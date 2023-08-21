@@ -37,7 +37,6 @@ interface UpdateHomeParams {
 export class HomeService {
   constructor(private readonly prismaService: PrismaService) {}
   async getHomes(filter: GetHomesParams): Promise<HomeResponseDto[]> {
-    console.log(filter);
     const homes = await this.prismaService.home.findMany({
       select: {
         id: true,
@@ -62,7 +61,7 @@ export class HomeService {
     }
 
     return homes.map((home) => {
-      const fetchHome = { ...home, image: home.images[0].url };
+      const fetchHome = { ...home, image: home.images[0]?.url };
       delete fetchHome.images;
       return new HomeResponseDto(fetchHome);
     });
@@ -129,5 +128,15 @@ export class HomeService {
     });
 
     return new HomeResponseDto(updatedHome);
+  }
+
+  async deleteHomeById(id: number) {
+    await this.prismaService.image.deleteMany({
+      where: { home_id: id },
+    });
+
+    await this.prismaService.home.delete({
+      where: { id },
+    });
   }
 }

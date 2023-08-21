@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { HomeResponseDto } from './dtos/home.dto';
 import { PropertyType } from '@prisma/client';
 
-interface GetHomesParam {
+interface GetHomesParams {
   city?: string;
   price?: {
     gte?: number;
@@ -12,10 +12,21 @@ interface GetHomesParam {
   property_type?: PropertyType;
 }
 
+interface CreateHomeParams {
+  address: string;
+  numberOfBedrooms: number;
+  numberOfBathrooms: number;
+  city: string;
+  price: number;
+  landSize: number;
+  propertyType: PropertyType;
+  images: { url: string }[];
+}
+
 @Injectable()
 export class HomeService {
   constructor(private readonly prismaService: PrismaService) {}
-  async getHomes(filter: GetHomesParam): Promise<HomeResponseDto[]> {
+  async getHomes(filter: GetHomesParams): Promise<HomeResponseDto[]> {
     console.log(filter);
     const homes = await this.prismaService.home.findMany({
       select: {
@@ -55,6 +66,40 @@ export class HomeService {
     if (!home) {
       throw new NotFoundException();
     }
+
+    return new HomeResponseDto(home);
+  }
+
+  async createHome({
+    address,
+    numberOfBedrooms,
+    numberOfBathrooms,
+    city,
+    landSize,
+    propertyType,
+    price,
+    images,
+  }: CreateHomeParams) {
+    const home = await this.prismaService.home.create({
+      data: {
+        address,
+        number_of_bedrooms: numberOfBedrooms,
+        number_of_bathrooms: numberOfBathrooms,
+        city,
+        land_size: landSize,
+        property_type: propertyType,
+        price,
+        realtor_id: 1,
+      },
+    });
+
+    const homeImages = images.map((image) => {
+      return { ...image, home_id: home.id };
+    });
+
+    await this.prismaService.image.createMany({
+      data: homeImages,
+    });
 
     return new HomeResponseDto(home);
   }

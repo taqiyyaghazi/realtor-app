@@ -67,7 +67,7 @@ export class HomeController {
   ) {
     const realtor = await this.homeService.getRealtorByHomeId(id);
 
-    if (realtor.id !== user?.id || !user) {
+    if (realtor.id !== user.id) {
       throw new UnauthorizedException();
     }
     return this.homeService.updateHomeById(id, body);
@@ -81,19 +81,33 @@ export class HomeController {
   ) {
     const realtor = await this.homeService.getRealtorByHomeId(id);
 
-    if (realtor.id !== user?.id || !user) {
+    if (realtor.id !== user.id) {
       throw new UnauthorizedException();
     }
     return this.homeService.deleteHomeById(id);
   }
 
   @Roles(UserType.BUYER)
-  @Post('/inquire/:id')
+  @Post('/:id/inquire')
   inquire(
     @Param('id', ParseIntPipe) homeId: number,
     @User() user: UserInfo,
     @Body() { message }: InquireDto,
   ) {
     return this.homeService.inquire(user, homeId, message);
+  }
+
+  @Roles(UserType.REALTOR)
+  @Get('/:id/messages')
+  async getHomeMessages(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: UserInfo,
+  ) {
+    const realtor = await this.homeService.getRealtorByHomeId(id);
+
+    if (realtor.id !== user?.id) {
+      throw new UnauthorizedException();
+    }
+    return this.homeService.getMessagesByHome(id);
   }
 }

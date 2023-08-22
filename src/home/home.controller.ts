@@ -9,9 +9,9 @@ import {
   Put,
   Query,
   UnauthorizedException,
+  SetMetadata,
 } from '@nestjs/common';
 import { PropertyType, UserType } from '@prisma/client';
-import { Roles } from 'src/decorators/role.decorator';
 import { User, UserInfo } from 'src/users/decorators/user.decorator';
 import {
   CreateHomeDto,
@@ -20,6 +20,8 @@ import {
   UpdateHomeDto,
 } from './dtos/home.dto';
 import { HomeService } from './home.service';
+
+const Roles = (...roles: UserType[]) => SetMetadata('roles', roles);
 
 @Controller('home')
 export class HomeController {

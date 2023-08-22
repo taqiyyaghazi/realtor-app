@@ -13,7 +13,12 @@ import {
 import { PropertyType, UserType } from '@prisma/client';
 import { Roles } from 'src/decorators/role.decorator';
 import { User, UserInfo } from 'src/users/decorators/user.decorator';
-import { CreateHomeDto, HomeResponseDto, UpdateHomeDto } from './dtos/home.dto';
+import {
+  CreateHomeDto,
+  HomeResponseDto,
+  InquireDto,
+  UpdateHomeDto,
+} from './dtos/home.dto';
 import { HomeService } from './home.service';
 
 @Controller('home')
@@ -80,5 +85,15 @@ export class HomeController {
       throw new UnauthorizedException();
     }
     return this.homeService.deleteHomeById(id);
+  }
+
+  @Roles(UserType.BUYER)
+  @Post('/inquire/:id')
+  inquire(
+    @Param('id', ParseIntPipe) homeId: number,
+    @User() user: UserInfo,
+    @Body() { message }: InquireDto,
+  ) {
+    return this.homeService.inquire(user, homeId, message);
   }
 }
